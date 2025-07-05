@@ -11,18 +11,18 @@ if ! command -v wasm-pack &> /dev/null; then
     export PATH="$HOME/.cargo/bin:$PATH"
 fi
 
-# Change to the WASM crate directory
-cd sudoko-wasm || { echo "sudoko-wasm crate not found!"; exit 1; }
+# Change to the sudoko crate directory (core library with WASM support)
+cd sudoko || { echo "sudoko crate not found!"; exit 1; }
 
-# Build for different targets
+# Build for different targets with WASM features
 echo "Building for web target..."
-wasm-pack build --target web --out-dir ../pkg-web --release
+wasm-pack build --target web --out-dir ../pkg-web --release --features wasm
 
 echo "Building for Node.js target..."
-wasm-pack build --target nodejs --out-dir ../pkg-nodejs --release
+wasm-pack build --target nodejs --out-dir ../pkg-nodejs --release --features wasm
 
 echo "Building for bundler target..."
-wasm-pack build --target bundler --out-dir ../pkg-bundler --release
+wasm-pack build --target bundler --out-dir ../pkg-bundler --release --features wasm
 
 echo "WASM build complete!"
 

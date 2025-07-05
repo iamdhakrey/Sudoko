@@ -423,7 +423,7 @@ dependencies = [
 
 [[package]]
 name = "sudoko"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "console_error_panic_hook",
  "criterion",
@@ -436,14 +436,14 @@ dependencies = [
 
 [[package]]
 name = "sudoko-tui"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "sudoko",
 ]
 
 [[package]]
 name = "sudoko-wasm"
-version = "0.1.0"
+version = "0.2.0"
 dependencies = [
  "console_error_panic_hook",
  "js-sys",

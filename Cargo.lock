@@ -435,6 +435,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "sudoko-tui"
+version = "0.1.0"
+dependencies = [
+ "sudoko",
+]
+
+[[package]]
+name = "sudoko-wasm"
+version = "0.1.0"
+dependencies = [
+ "console_error_panic_hook",
+ "js-sys",
+ "sudoko",
+ "wasm-bindgen",
+ "web-sys",
+]
+
+[[package]]
 name = "syn"
 version = "2.0.104"
 source = "registry+https://github.com/rust-lang/crates.io-index"

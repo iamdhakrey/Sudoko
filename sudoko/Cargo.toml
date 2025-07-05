@@ -1,13 +1,17 @@
 [package]
 name = "sudoko"
-version = "0.2.0"
+version = "0.3.0"
 edition = "2021"
 authors = ["Hrithik Dhakrey <dhakreyhrithik@gmail.com>"]
-description = "A comprehensive Sudoku solving library with WASM support"
+description = "A comprehensive Sudoku solving library with multiple strategies, puzzle generation, and WebAssembly support"
 license = "MIT"
 repository = "https://github.com/iamdhakrey/sudoko"
-keywords = ["sudoku", "puzzle", "solver", "wasm", "webassembly"]
-categories = ["games", "algorithms", "wasm"]
+homepage = "https://github.com/iamdhakrey/sudoko"
+documentation = "https://docs.rs/sudoko"
+readme = "../README.md"
+keywords = ["sudoku", "puzzle", "solver", "game", "algorithms"]
+categories = ["games", "algorithms"]
+exclude = ["target/", "pkg-*/", "web-example/"]
 
 [lib]
 crate-type = ["cdylib", "rlib"]
@@ -29,21 +33,23 @@ name = "hints_and_validation"
 path = "examples/hints_and_validation.rs"
 
 [dependencies]
-wasm-bindgen = "0.2"
-js-sys = "0.3"
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
+serde = { version = "1.0", features = ["derive"], optional = true }
+serde_json = { version = "1.0", optional = true }
+
+# WASM-specific dependencies (optional)
+wasm-bindgen = { version = "0.2", optional = true }
+js-sys = { version = "0.3", optional = true }
+console_error_panic_hook = { version = "0.1.6", optional = true }
 
 [dependencies.web-sys]
 version = "0.3"
 features = ["console"]
+optional = true
 
 [features]
-default = ["console_error_panic_hook"]
-
-[dependencies.console_error_panic_hook]
-version = "0.1.6"
-optional = true
+default = []
+wasm = ["wasm-bindgen", "js-sys", "web-sys", "console_error_panic_hook"]
+serde = ["dep:serde", "dep:serde_json"]
 
 [dev-dependencies]
 criterion = "0.5"

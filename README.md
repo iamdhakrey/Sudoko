@@ -1,6 +1,27 @@
 # Sudoku Solver - Modular Rust Workspace
 
+[![Crates.io](https://img.shields.io/crates/v/sudoko.svg)](https://crates.io/crates/sudoko)
+[![Documentation](https://docs.rs/sudoko/badge.svg)](https://docs.rs/sudoko)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 A comprehensive, modular Rust library and application suite for solving advanced Sudoku puzzles of various sizes (3x3, 4x4, 5x5, and more) using multiple solving strategies, with WebAssembly (WASM) and terminal UI support.
+
+## Installation
+
+Add the core library to your Rust project:
+
+```toml
+[dependencies]
+sudoko = "0.3"
+```
+
+Install the terminal UI application:
+
+```bash
+cargo install sudoko-tui
+```
+
+For WebAssembly projects, use `sudoko-wasm` with wasm-pack.
 
 ## Features
 

@@ -1,8 +1,10 @@
+#[cfg(feature = "serde")]
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 use std::fmt;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub enum Cell {
     Empty,
     Given(u8),
@@ -26,7 +28,8 @@ impl Cell {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
+#[derive(Debug, Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 pub struct Sudoku {
     pub grid: Vec<Vec<Cell>>,
     pub size: usize,

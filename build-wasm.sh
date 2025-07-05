@@ -11,19 +11,23 @@ if ! command -v wasm-pack &> /dev/null; then
     export PATH="$HOME/.cargo/bin:$PATH"
 fi
 
+# Change to the WASM crate directory
+cd sudoko-wasm || { echo "sudoko-wasm crate not found!"; exit 1; }
+
 # Build for different targets
 echo "Building for web target..."
-wasm-pack build --target web --out-dir pkg-web --release
+wasm-pack build --target web --out-dir ../pkg-web --release
 
 echo "Building for Node.js target..."
-wasm-pack build --target nodejs --out-dir pkg-nodejs --release
+wasm-pack build --target nodejs --out-dir ../pkg-nodejs --release
 
 echo "Building for bundler target..."
-wasm-pack build --target bundler --out-dir pkg-bundler --release
+wasm-pack build --target bundler --out-dir ../pkg-bundler --release
 
 echo "WASM build complete!"
 
-# Copy the web build to the web-example directory
+# Copy the web build to the web-example directory (from workspace root)
+cd ..
 if [ -d "pkg-web" ]; then
     echo "Copying WASM files to web-example..."
     rm -rf web-example/pkg

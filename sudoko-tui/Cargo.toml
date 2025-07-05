@@ -18,4 +18,4 @@ name = "sudoko-tui"
 path = "src/main.rs"
 
 [dependencies]
-sudoko = { path = "../sudoko", default-features = false }
+sudoko = "0.3.0"

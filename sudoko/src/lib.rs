@@ -3,9 +3,15 @@ mod strategies;
 mod sudoku;
 mod utils;
 
+#[cfg(feature = "wasm")]
+mod wasm;
+
 pub use solver::{Difficulty, SudokuSolver};
 pub use strategies::*;
 pub use sudoku::{Cell, Sudoku};
+
+#[cfg(feature = "wasm")]
+pub use wasm::*;
 
 use std::{fs, process};
 

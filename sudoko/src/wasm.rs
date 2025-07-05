@@ -1,6 +1,6 @@
 //! WebAssembly interface for the Sudoku solver with simple text-based UI
 
-use sudoko::{Difficulty, Sudoku, SudokuSolver};
+use crate::{Difficulty, Sudoku, SudokuSolver};
 use wasm_bindgen::prelude::*;
 
 // When the `console_error_panic_hook` feature is enabled, we can call the

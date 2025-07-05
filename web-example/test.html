@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>WASM Sudoku Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+
+        .test-section {
+            margin: 20px 0;
+            padding: 10px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            padding: 10px;
+            margin: 5px;
+        }
+
+        .result {
+            margin: 10px 0;
+            padding: 10px;
+            background: #f0f0f0;
+        }
+
+        .error {
+            background: #ffcccc;
+        }
+
+        .success {
+            background: #ccffcc;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>WASM Sudoku Solver Test</h1>
+
+    <div class="test-section">
+        <h3>Test 1: Basic Solving</h3>
+        <button onclick="testBasicSolve()">Test Solve Function</button>
+        <div id="test1-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Test 2: Step-by-Step Solving</h3>
+        <button onclick="testStepSolve()">Test Step Solve</button>
+        <div id="test2-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Test 3: Cell Setting</h3>
+        <button onclick="testCellSetting()">Test Set Cell</button>
+        <div id="test3-result" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>Test 4: Validation</h3>
+        <button onclick="testValidation()">Test Validation</button>
+        <div id="test4-result" class="result"></div>
+    </div>
+
+    <script type="module">
+        import init, { WasmSudokuSolver } from './pkg/sudoko.js';
+
+        let solver;
+
+        async function initWasm() {
+            try {
+                await init();
+                solver = new WasmSudokuSolver();
+                console.log('WASM module loaded successfully');
+                document.getElementById('test1-result').innerHTML = '<span class="success">WASM module loaded successfully!</span>';
+            } catch (error) {
+                console.error('Failed to load WASM module:', error);
+                document.getElementById('test1-result').innerHTML = '<span class="error">Failed to load WASM module: ' + error.message + '</span>';
+            }
+        }
+
+        window.testBasicSolve = function () {
+            if (!solver) {
+                document.getElementById('test1-result').innerHTML = '<span class="error">WASM module not loaded</span>';
+                return;
+            }
+
+            const puzzle = "530070000600195000098000060800060003400803001700020006060000280000419005000080079";
+
+            try {
+                const solution = solver.solve_from_string(puzzle, 9);
+                if (solution.startsWith('Error')) {
+                    document.getElementById('test1-result').innerHTML = '<span class="error">' + solution + '</span>';
+                } else {
+                    document.getElementById('test1-result').innerHTML =
+                        '<span class="success">Solve test passed!</span><br>' +
+                        'Original: ' + puzzle.substring(0, 20) + '...<br>' +
+                        'Solution: ' + solution.substring(0, 20) + '...';
+                }
+            } catch (error) {
+                document.getElementById('test1-result').innerHTML = '<span class="error">Error: ' + error.message + '</span>';
+            }
+        };
+
+        window.testStepSolve = function () {
+            if (!solver) {
+                document.getElementById('test2-result').innerHTML = '<span class="error">WASM module not loaded</span>';
+                return;
+            }
+
+            const puzzle = "530070000600195000098000060800060003400803001700020006060000280000419005000080079";
+
+            try {
+                const step1 = solver.solve_step(puzzle, 9);
+                if (step1.startsWith('Error')) {
+                    document.getElementById('test2-result').innerHTML = '<span class="error">' + step1 + '</span>';
+                } else if (step1 === puzzle) {
+                    document.getElementById('test2-result').innerHTML = '<span class="error">No progress made</span>';
+                } else {
+                    document.getElementById('test2-result').innerHTML =
+                        '<span class="success">Step solve test passed!</span><br>' +
+                        'Original: ' + puzzle.substring(0, 20) + '...<br>' +
+                        'After step: ' + step1.substring(0, 20) + '...';
+                }
+            } catch (error) {
+                document.getElementById('test2-result').innerHTML = '<span class="error">Error: ' + error.message + '</span>';
+            }
+        };
+
+        window.testCellSetting = function () {
+            if (!solver) {
+                document.getElementById('test3-result').innerHTML = '<span class="error">WASM module not loaded</span>';
+                return;
+            }
+
+            const puzzle = "530070000600195000098000060800060003400803001700020006060000280000419005000080079";
+
+            try {
+                const updated = solver.set_cell(puzzle, 9, 0, 2, 4);
+                if (updated.startsWith('Error')) {
+                    document.getElementById('test3-result').innerHTML = '<span class="error">' + updated + '</span>';
+                } else {
+                    document.getElementById('test3-result').innerHTML =
+                        '<span class="success">Cell setting test passed!</span><br>' +
+                        'Original: ' + puzzle.substring(0, 20) + '...<br>' +
+                        'After setting (0,2) to 4: ' + updated.substring(0, 20) + '...';
+                }
+            } catch (error) {
+                document.getElementById('test3-result').innerHTML = '<span class="error">Error: ' + error.message + '</span>';
+            }
+        };
+
+        window.testValidation = function () {
+            if (!solver) {
+                document.getElementById('test4-result').innerHTML = '<span class="error">WASM module not loaded</span>';
+                return;
+            }
+
+            const validPuzzle = "530070000600195000098000060800060003400803001700020006060000280000419005000080079";
+            const invalidPuzzle = "111111111222222222333333333444444444555555555666666666777777777888888888999999999";
+
+            try {
+                const valid1 = solver.validate(validPuzzle, 9);
+                const valid2 = solver.validate(invalidPuzzle, 9);
+
+                if (valid1 && !valid2) {
+                    document.getElementById('test4-result').innerHTML = '<span class="success">Validation test passed!</span><br>Valid puzzle: ' + valid1 + '<br>Invalid puzzle: ' + valid2;
+                } else {
+                    document.getElementById('test4-result').innerHTML = '<span class="error">Validation test failed</span>';
+                }
+            } catch (error) {
+                document.getElementById('test4-result').innerHTML = '<span class="error">Error: ' + error.message + '</span>';
+            }
+        };
+
+        // Initialize WASM module
+        initWasm();
+    </script>
+</body>
+
+</html>

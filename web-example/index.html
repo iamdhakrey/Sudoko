@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <title>Sudoku Solver WASM Example</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .sudoku-grid {
+            display: inline-block;
+            border: 3px solid #000;
+            margin: 20px;
+        }
+
+        .sudoku-row {
+            display: flex;
+        }
+
+        .sudoku-cell {
+            width: 40px;
+            height: 40px;
+            border: 1px solid #ccc;
+            text-align: center;
+            line-height: 40px;
+            font-size: 16px;
+            font-weight: bold;
+        }
+
+        .sudoku-cell:nth-child(3n) {
+            border-right: 2px solid #000;
+        }
+
+        .sudoku-row:nth-child(3n) .sudoku-cell {
+            border-bottom: 2px solid #000;
+        }
+
+        .given {
+            background-color: #f0f0f0;
+            color: #000;
+        }
+
+        .filled {
+            background-color: #e6f3ff;
+            color: #0066cc;
+        }
+
+        .controls {
+            margin: 20px 0;
+        }
+
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        textarea {
+            width: 100%;
+            height: 100px;
+            margin: 10px 0;
+            font-family: monospace;
+        }
+
+        .result {
+            margin: 20px 0;
+            padding: 10px;
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            white-space: pre-line;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Sudoku Solver - WebAssembly Demo</h1>
+
+    <div class="controls">
+        <h3>Input Puzzle:</h3>
+        <textarea id="puzzleInput"
+            placeholder="Enter your Sudoku puzzle as a string (use 0 or . for empty cells)">530070000600195000098000060800060003400803001700020006060000280000419005000080079</textarea>
+
+        <div>
+            <label for="sizeSelect">Puzzle Size:</label>
+            <select id="sizeSelect">
+                <option value="4">4x4</option>
+                <option value="9" selected>9x9</option>
+                <option value="16">16x16</option>
+            </select>
+        </div>
+
+        <div>
+            <button onclick="solvePuzzle()">Solve Puzzle</button>
+            <button onclick="validatePuzzle()">Validate Puzzle</button>
+            <button onclick="getHint()">Get Hint</button>
+            <button onclick="solveStep()">Solve One Step</button>
+            <button onclick="loadExample()">Load Example</button>
+            <button onclick="clearPuzzle()">Clear</button>
+        </div>
+    </div>
+
+    <div id="puzzleDisplay"></div>
+
+    <div id="result" class="result"></div>
+
+    <script type="module">
+        import init, { WasmSudokuSolver } from './pkg/sudoko.js';
+
+        let solver;
+
+        async function initWasm() {
+            await init();
+            solver = new WasmSudokuSolver();
+            document.getElementById('result').textContent = 'WASM module loaded successfully!';
+        }
+
+        function displaySudoku(puzzleStr, size) {
+            const container = document.getElementById('puzzleDisplay');
+            container.innerHTML = '';
+
+            if (!puzzleStr || puzzleStr.length !== size * size) {
+                container.innerHTML = '<div class="result">Invalid puzzle format</div>';
+                return;
+            }
+
+            const grid = document.createElement('div');
+            grid.className = 'sudoku-grid';
+
+            for (let row = 0; row < size; row++) {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = 'sudoku-row';
+
+                for (let col = 0; col < size; col++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'sudoku-cell';
+
+                    const index = row * size + col;
+                    const char = puzzleStr[index];
+
+                    if (char === '0' || char === '.' || char === ' ') {
+                        cell.textContent = '';
+                    } else {
+                        cell.textContent = char;
+                        cell.classList.add('given');
+                    }
+
+                    rowDiv.appendChild(cell);
+                }
+
+                grid.appendChild(rowDiv);
+            }
+
+            container.appendChild(grid);
+        }
+
+        window.solvePuzzle = function () {
+            if (!solver) {
+                document.getElementById('result').textContent = 'WASM module not loaded yet!';
+                return;
+            }
+
+            const puzzleStr = document.getElementById('puzzleInput').value.trim();
+            const size = parseInt(document.getElementById('sizeSelect').value);
+
+            try {
+                const solution = solver.solve_from_string(puzzleStr, size);
+
+                if (solution.startsWith('Error')) {
+                    document.getElementById('result').textContent = solution;
+                } else {
+                    document.getElementById('result').textContent = 'Solution found!';
+                    displaySudoku(solution, size);
+                    // Update the input field with the solution
+                    document.getElementById('puzzleInput').value = solution;
+                }
+            } catch (error) {
+                document.getElementById('result').textContent = 'Error: ' + error.message;
+            }
+        };
+
+        window.solveStep = function () {
+            if (!solver) {
+                document.getElementById('result').textContent = 'WASM module not loaded yet!';
+                return;
+            }
+
+            const puzzleStr = document.getElementById('puzzleInput').value.trim();
+            const size = parseInt(document.getElementById('sizeSelect').value);
+
+            try {
+                const newPuzzle = solver.solve_step(puzzleStr, size);
+
+                if (newPuzzle.startsWith('Error')) {
+                    document.getElementById('result').textContent = newPuzzle;
+                } else if (newPuzzle === puzzleStr) {
+                    document.getElementById('result').textContent = 'No progress made with logical strategies. Try full solve.';
+                } else {
+                    document.getElementById('result').textContent = 'Applied one solving step!';
+                    displaySudoku(newPuzzle, size);
+                    // Update the input field
+                    document.getElementById('puzzleInput').value = newPuzzle;
+                }
+            } catch (error) {
+                document.getElementById('result').textContent = 'Error: ' + error.message;
+            }
+        };
+
+        window.clearPuzzle = function () {
+            const size = parseInt(document.getElementById('sizeSelect').value);
+            const emptyPuzzle = '0'.repeat(size * size);
+            document.getElementById('puzzleInput').value = emptyPuzzle;
+            displaySudoku(emptyPuzzle, size);
+            document.getElementById('result').textContent = 'Puzzle cleared.';
+        };
+
+        window.validatePuzzle = function () {
+            if (!solver) {
+                document.getElementById('result').textContent = 'WASM module not loaded yet!';
+                return;
+            }
+
+            const puzzleStr = document.getElementById('puzzleInput').value.trim();
+            const size = parseInt(document.getElementById('sizeSelect').value);
+
+            try {
+                const isValid = solver.validate(puzzleStr, size);
+                document.getElementById('result').textContent = isValid ?
+                    '✓ Puzzle is valid!' :
+                    '✗ Puzzle is invalid!';
+
+                displaySudoku(puzzleStr, size);
+            } catch (error) {
+                document.getElementById('result').textContent = 'Error: ' + error.message;
+            }
+        };
+
+        window.getHint = function () {
+            if (!solver) {
+                document.getElementById('result').textContent = 'WASM module not loaded yet!';
+                return;
+            }
+
+            const puzzleStr = document.getElementById('puzzleInput').value.trim();
+            const size = parseInt(document.getElementById('sizeSelect').value);
+
+            try {
+                const hint = solver.get_hint(puzzleStr, size);
+
+                if (hint.includes(':')) {
+                    const [row, col, value] = hint.split(':').map(x => parseInt(x));
+                    document.getElementById('result').textContent =
+                        `Hint: Place ${value} at position (${row + 1}, ${col + 1})`;
+                } else {
+                    document.getElementById('result').textContent = hint;
+                }
+
+                displaySudoku(puzzleStr, size);
+            } catch (error) {
+                document.getElementById('result').textContent = 'Error: ' + error.message;
+            }
+        };
+
+        window.loadExample = function () {
+            const size = parseInt(document.getElementById('sizeSelect').value);
+            let example;
+
+            switch (size) {
+                case 4:
+                    example = '1.3..2.43.1..4.2';
+                    break;
+                case 9:
+                    example = '530070000600195000098000060800060003400803001700020006060000280000419005000080079';
+                    break;
+                case 16:
+                    example = '1.3...7.9.B.D.F..2.4.6.8.A.C.E.0.....................';
+                    // Pad to 256 characters for 16x16
+                    example = example.padEnd(256, '.');
+                    break;
+                default:
+                    example = '530070000600195000098000060800060003400803001700020006060000280000419005000080079';
+            }
+
+            document.getElementById('puzzleInput').value = example;
+            displaySudoku(example, size);
+        };
+
+        // Initialize when page loads
+        initWasm();
+
+        // Load default example
+        setTimeout(() => {
+            loadExample();
+        }, 100);
+    </script>
+</body>
+
+</html>

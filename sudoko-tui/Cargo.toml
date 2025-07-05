@@ -1,0 +1,10 @@
+[package]
+name = "sudoko-tui"
+version = "0.1.0"
+edition = "2021"
+authors = ["Hrithik Dhakrey <dhakreyhrithik@gmail.com>"]
+description = "Terminal User Interface for the sudoko library - simple text interface"
+license = "MIT"
+
+[dependencies]
+sudoko = { path = "../sudoko" }

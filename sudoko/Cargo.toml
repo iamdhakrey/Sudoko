@@ -1,0 +1,49 @@
+[package]
+name = "sudoko"
+version = "0.1.0"
+edition = "2021"
+authors = ["Hrithik Dhakrey <dhakreyhrithik@gmail.com>"]
+description = "A comprehensive Sudoku solving library with WASM support"
+license = "MIT"
+repository = "https://github.com/iamdhakrey/sudoko"
+keywords = ["sudoku", "puzzle", "solver", "wasm", "webassembly"]
+categories = ["games", "algorithms", "wasm"]
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[[bin]]
+name = "sudoko-cli"
+path = "src/main.rs"
+
+[[example]]
+name = "basic_solving"
+path = "examples/basic_solving.rs"
+
+[[example]]
+name = "puzzle_generation"
+path = "examples/puzzle_generation.rs"
+
+[[example]]
+name = "hints_and_validation"
+path = "examples/hints_and_validation.rs"
+
+[dependencies]
+wasm-bindgen = "0.2"
+js-sys = "0.3"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+[dependencies.web-sys]
+version = "0.3"
+features = ["console"]
+
+[features]
+default = ["console_error_panic_hook"]
+
+[dependencies.console_error_panic_hook]
+version = "0.1.6"
+optional = true
+
+[dev-dependencies]
+criterion = "0.5"

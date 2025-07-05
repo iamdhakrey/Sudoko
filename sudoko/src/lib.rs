@@ -8,7 +8,6 @@ pub use strategies::*;
 pub use sudoku::{Cell, Sudoku};
 
 use std::{fs, process};
-use wasm_bindgen::prelude::*;
 
 pub fn solve_puzzle(puzzle_str: &str, size_str: &str) {
     let size = match size_str.parse::<usize>() {

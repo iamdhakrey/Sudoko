@@ -13,6 +13,9 @@ Add the core library to your Rust project:
 ```toml
 [dependencies]
 sudoko = "0.3"
+
+# For WebAssembly support
+sudoko = { version = "0.3", features = ["wasm"] }
 ```
 
 Install the terminal UI application:
@@ -21,7 +24,7 @@ Install the terminal UI application:
 cargo install sudoko-tui
 ```
 
-For WebAssembly projects, use `sudoko-wasm` with wasm-pack.
+For WebAssembly projects, use the core library with WASM features enabled.
 
 ## Features
 
@@ -38,25 +41,21 @@ For WebAssembly projects, use `sudoko-wasm` with wasm-pack.
 
 ## Project Structure
 
-This workspace consists of three main crates:
+This workspace consists of two main crates:
 
-### 📚 `sudoko` - Core Library
+### 📚 `sudoko` - Core Library with WASM Support
 - Located in `sudoko/`
 - Provides all puzzle logic, solving, generation, validation, and CLI
+- **Includes WebAssembly support** when built with `--features wasm`
 - **Public API:**
   - `Sudoku`, `SudokuSolver`, `Cell`, `Difficulty`, and utilities
+  - `WasmSudoku` and WASM utilities (when `wasm` feature is enabled)
 
 ### 🖥️ `sudoko-tui` - Terminal User Interface
 - Located in `sudoko-tui/`
 - Simple interactive terminal UI (WASD navigation, number input, solve, etc.)
 - Uses only the public API from the core library
 - No external UI dependencies
-
-### 🌐 `sudoko-wasm` - WebAssembly Interface
-- Located in `sudoko-wasm/`
-- WASM-compatible API for web integration
-- Text-based rendering for simple web UIs
-- All core functionality accessible from JavaScript
 
 ---
 
@@ -75,11 +74,11 @@ cargo build
 # Core library
 cargo build -p sudoko
 
+# Core library with WASM support
+cargo build -p sudoko --features wasm
+
 # Terminal UI
 cargo build -p sudoko-tui
-
-# WebAssembly
-cargo build -p sudoko-wasm
 ```
 
 ### Running Applications
@@ -132,7 +131,7 @@ let puzzle = solver.generate_puzzle(9, Difficulty::Hard)?;
 
 ### WASM (JavaScript)
 ```javascript
-import { WasmSudoku } from './pkg/sudoko_wasm.js';
+import { WasmSudoku } from './pkg/sudoko.js';
 
 // Create a new puzzle
 const sudoku = new WasmSudoku(9);
@@ -151,17 +150,17 @@ console.log(example.render_text());
 
 ## Architecture Benefits
 
-1. **Separation of Concerns**: Core logic, UI, and web interface are completely separate
-2. **Reusability**: The core library can be used in any Rust project
-3. **Web Ready**: WASM crate enables easy web integration
-4. **Simple UIs**: Both TUI and WASM use simple text rendering (no heavy dependencies)
-5. **Public API**: Clean, well-defined public interfaces for all functionality
+1. **Unified Codebase**: Core logic and WASM interface are in one crate, reducing duplication
+2. **Optional Features**: WASM support is feature-gated, keeping the core library lightweight
+3. **Reusability**: The core library can be used in any Rust project with or without WASM
+4. **Simple UIs**: TUI uses simple text rendering with no heavy dependencies
+5. **Clean API**: Well-defined public interfaces for all functionality
 
 ## Development Notes
 
 - All crates use only the public API from the core library, ensuring clean boundaries and maintainable code.
+- The core library uses feature flags to keep WASM dependencies optional.
 - The implementations avoid heavy dependencies, making them lightweight and easy to integrate into different environments.
-- See `ARCHITECTURE.md` for more technical details (if present).
 
 ## License
 

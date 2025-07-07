@@ -30,7 +30,7 @@ struct SudokuApp {
     is_solved: bool,
     mode: AppMode,
     should_quit: bool,
-    hint_tracker: Vec<(usize, usize, u8)>, // Track given hints to avoid repeating
+    // hint_tracker: Vec<(usize, usize, u8)>, // Track given hints to avoid repeating
 }
 
 impl SudokuApp {
@@ -47,7 +47,7 @@ impl SudokuApp {
             is_solved: false,
             mode: AppMode::Normal,
             should_quit: false,
-            hint_tracker: Vec::new(),
+            // hint_tracker: Vec::new(),
         }
     }
 

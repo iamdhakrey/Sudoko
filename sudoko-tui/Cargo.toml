@@ -3,12 +3,12 @@ name = "sudoko-tui"
 version = "0.3.0"
 edition = "2021"
 authors = ["Hrithik Dhakrey <dhakreyhrithik@gmail.com>"]
-description = "Terminal User Interface for the sudoko library - simple interactive text interface"
+description = "Terminal User Interface for the sudoko library - modern TUI using ratatui"
 license = "MIT"
 repository = "https://github.com/iamdhakrey/sudoko"
 homepage = "https://github.com/iamdhakrey/sudoko"
 documentation = "https://docs.rs/sudoko-tui"
-readme = "../README.md"
+readme = "README.md"
 keywords = ["sudoku", "tui", "terminal", "puzzle", "game"]
 categories = ["games", "command-line-utilities"]
 exclude = ["target/"]
@@ -19,3 +19,6 @@ path = "src/main.rs"
 
 [dependencies]
 sudoko = "0.3.0"
+ratatui = "0.29"
+crossterm = "0.28"
+anyhow = "1.0"

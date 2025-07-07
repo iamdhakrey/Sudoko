@@ -30,6 +30,7 @@ struct SudokuApp {
     is_solved: bool,
     mode: AppMode,
     should_quit: bool,
+    hint_tracker: Vec<(usize, usize, u8)>, // Track given hints to avoid repeating
 }
 
 impl SudokuApp {
@@ -46,6 +47,7 @@ impl SudokuApp {
             is_solved: false,
             mode: AppMode::Normal,
             should_quit: false,
+            hint_tracker: Vec::new(),
         }
     }
 
@@ -366,7 +368,7 @@ fn draw_controls(f: &mut Frame, area: Rect) {
 fn draw_help(f: &mut Frame, area: Rect) {
     let help_text = vec![
         Line::from(vec![Span::styled(
-            "🧩 SUDOKU SOLVER HELP 🧩",
+            "🧩 SUDOKU HELP 🧩",
             Style::default()
                 .fg(Color::Cyan)
                 .add_modifier(Modifier::BOLD),
@@ -453,7 +455,7 @@ fn ui(f: &mut Frame, app: &SudokuApp) {
         .split(f.area());
 
     // Title
-    let title = Paragraph::new("🧩 SUDOKU SOLVER 🧩")
+    let title = Paragraph::new("🧩 SUDOKU 🧩")
         .style(
             Style::default()
                 .fg(Color::Cyan)

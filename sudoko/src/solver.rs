@@ -1,5 +1,7 @@
 use crate::strategies::{get_all_strategies, SolvingStrategy};
 use crate::sudoku::{Cell, Sudoku};
+use rand::seq::SliceRandom;
+use rand::{thread_rng, Rng};
 use std::collections::HashMap;
 
 #[derive(Debug, Clone)]
@@ -292,29 +294,40 @@ impl SudokuSolver {
         difficulty: Difficulty,
     ) -> Result<Sudoku, String> {
         let mut sudoku = Sudoku::new(size);
+        let mut rng = thread_rng();
 
         // Fill the diagonal boxes first (they don't interfere with each other)
-        self.fill_diagonal_boxes(&mut sudoku)?;
+        // Randomize the order of filling diagonal boxes for more variety
+        let box_size = sudoku.box_size;
+        let mut diagonal_indices: Vec<usize> = (0..box_size).collect();
+        diagonal_indices.shuffle(&mut rng);
+
+        for &i in &diagonal_indices {
+            self.fill_box(&mut sudoku, i * box_size, i * box_size)?;
+        }
 
         // Solve the complete puzzle
         let full_solution = self.solve(sudoku.clone())?;
 
-        // Remove cells based on difficulty
-        let cells_to_remove = match difficulty {
+        // Remove cells based on difficulty with some randomization
+        let base_cells_to_remove = match difficulty {
             Difficulty::Easy => size * size * 40 / 100, // Remove 40%
             Difficulty::Medium => size * size * 50 / 100, // Remove 50%
             Difficulty::Hard => size * size * 60 / 100, // Remove 60%
             Difficulty::Expert => size * size * 70 / 100, // Remove 70%
         };
 
-        self.remove_cells_symmetrically(full_solution, cells_to_remove)
-    }
+        // Add some randomization to the number of cells removed (±5%)
+        let variation = (base_cells_to_remove as f32 * 0.05) as usize;
+        let cells_to_remove = if variation > 0 {
+            let min_remove = base_cells_to_remove.saturating_sub(variation);
+            let max_remove = base_cells_to_remove + variation;
+            rng.gen_range(min_remove..=max_remove.min(size * size - 17)) // Ensure at least 17 clues
+        } else {
+            base_cells_to_remove
+        };
 
-    fn fill_diagonal_boxes(&self, sudoku: &mut Sudoku) -> Result<(), String> {
-        for i in 0..sudoku.box_size {
-            self.fill_box(sudoku, i * sudoku.box_size, i * sudoku.box_size)?;
-        }
-        Ok(())
+        self.remove_cells_symmetrically(full_solution, cells_to_remove)
     }
 
     fn fill_box(
@@ -325,11 +338,8 @@ impl SudokuSolver {
     ) -> Result<(), String> {
         let mut values: Vec<u8> = (1..=sudoku.size as u8).collect();
 
-        // Shuffle values (simplified random shuffle)
-        for i in 0..values.len() {
-            let j = (i * 7 + 3) % values.len(); // Simple pseudo-random
-            values.swap(i, j);
-        }
+        // Shuffle values randomly
+        values.shuffle(&mut thread_rng());
 
         let mut idx = 0;
         for row in start_row..start_row + sudoku.box_size {
@@ -349,32 +359,38 @@ impl SudokuSolver {
     ) -> Result<Sudoku, String> {
         let mut removed = 0;
         let size = sudoku.size;
+        let mut rng = thread_rng();
 
-        // Simple cell removal (in a real implementation, you'd ensure unique solution)
-        for i in 0..size {
-            for j in 0..size {
-                if removed >= cells_to_remove {
-                    break;
-                }
+        // Create a list of all cell positions
+        let mut positions: Vec<(usize, usize)> = (0..size)
+            .flat_map(|i| (0..size).map(move |j| (i, j)))
+            .collect();
 
-                // Remove cells in a pattern
-                if (i + j) % 3 == 0 && removed < cells_to_remove {
-                    sudoku.grid[i][j] = Cell::Empty;
-                    removed += 1;
+        // Shuffle the positions randomly
+        positions.shuffle(&mut rng);
 
-                    // Also remove symmetric cell
-                    let sym_i = size - 1 - i;
-                    let sym_j = size - 1 - j;
-                    if sym_i != i || sym_j != j {
-                        if removed < cells_to_remove {
-                            sudoku.grid[sym_i][sym_j] = Cell::Empty;
+        // Remove cells randomly while maintaining some symmetry
+        for &(row, col) in &positions {
+            if removed >= cells_to_remove {
+                break;
+            }
+
+            // Remove current cell
+            if sudoku.grid[row][col] != Cell::Empty {
+                sudoku.grid[row][col] = Cell::Empty;
+                removed += 1;
+
+                // Optionally remove symmetric cell (not always for more variety)
+                if removed < cells_to_remove && rng.gen_bool(0.7) {
+                    let sym_row = size - 1 - row;
+                    let sym_col = size - 1 - col;
+                    if sym_row != row || sym_col != col {
+                        if sudoku.grid[sym_row][sym_col] != Cell::Empty {
+                            sudoku.grid[sym_row][sym_col] = Cell::Empty;
                             removed += 1;
                         }
                     }
                 }
-            }
-            if removed >= cells_to_remove {
-                break;
             }
         }
 

@@ -845,6 +845,12 @@ dependencies = [
 [[package]]
 name = "sudoko"
 version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ce2b3adf7c0c5e0757e7301239f6ce280078b94e75ace79246a52bc895d4e11c"
+
+[[package]]
+name = "sudoko"
+version = "0.4.0"
 dependencies = [
  "console_error_panic_hook",
  "criterion",
@@ -857,19 +863,13 @@ dependencies = [
 ]
 
 [[package]]
-name = "sudoko"
-version = "0.3.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ce2b3adf7c0c5e0757e7301239f6ce280078b94e75ace79246a52bc895d4e11c"
-
-[[package]]
 name = "sudoko-tui"
 version = "0.4.0"
 dependencies = [
  "anyhow",
  "crossterm",
  "ratatui",
- "sudoko 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "sudoko 0.3.0",
 ]
 
 [[package]]

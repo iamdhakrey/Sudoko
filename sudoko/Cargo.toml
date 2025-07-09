@@ -33,6 +33,7 @@ name = "hints_and_validation"
 path = "examples/hints_and_validation.rs"
 
 [dependencies]
+rand = "0.8"
 serde = { version = "1.0", features = ["derive"], optional = true }
 serde_json = { version = "1.0", optional = true }
 

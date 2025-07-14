@@ -85,8 +85,16 @@ impl SudokuApp {
                     self.generate_new_puzzle(Difficulty::Expert)
                 }
                 KeyCode::Char(c) if c.is_ascii_digit() => {
-                    let digit = c.to_digit(10).unwrap() as u8;
-                    self.set_value(digit);
+                    if let Some(digit) = c.to_digit(10) {
+                        let value = digit as u8;
+                        if value <= 9 {
+                            self.set_value(value);
+                        } else {
+                            self.message = "Invalid digit: only 1-9 are allowed".to_string();
+                        }
+                    } else {
+                        self.message = "Invalid input: not a valid digit".to_string();
+                    }
                 }
                 KeyCode::Delete | KeyCode::Backspace | KeyCode::Char('0') => {
                     self.set_value(0);

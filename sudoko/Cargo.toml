@@ -1,6 +1,6 @@
 [package]
 name = "sudoko"
-version = "0.4.0"
+version = "0.4.1"
 edition = "2021"
 authors = ["Hrithik Dhakrey <dhakreyhrithik@gmail.com>"]
 description = "A comprehensive Sudoku solving library with multiple strategies, puzzle generation, and WebAssembly support"

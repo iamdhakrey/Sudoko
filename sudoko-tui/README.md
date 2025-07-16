@@ -13,7 +13,8 @@ A modern, interactive Sudoku terminal user interface built with Rust, featuring 
 - **🎨 Beautiful Terminal UI**: Colorized grid with clear 3×3 block boundaries
 - **⌨️ Intuitive Controls**: Easy keyboard navigation and number input
 - **🔍 Smart Hints**: Intelligent hint system that cycles through available options
-- **🚫 Input Validation**: Real-time error detection with visual feedback
+- **🚫 Enhanced Validation**: Real-time error detection with solution verification
+- **📊 Progress Bar**: Visual progress indicator showing completion percentage
 - **🎯 Multiple Difficulty Levels**: Easy, Medium, Hard, and Expert puzzles
 - **🔄 Auto-Solver**: Automatic puzzle solving with backtracking algorithm
 - **📋 Help System**: Built-in help with controls and gameplay instructions
@@ -78,8 +79,19 @@ Fill the 9×9 grid so that each row, column, and 3×3 box contains all digits fr
 - **🟡 Yellow Background**: Current cursor position
 - **🔵 Cyan Numbers**: Given/preset numbers (cannot be changed)
 - **⚪ White Numbers**: Numbers you filled in
-- **🔴 Red Numbers**: Invalid numbers (violate Sudoku rules)
+- **🔴 Red Numbers**: Invalid numbers (violate rules or don't match solution)
 - **🟢 Green Borders**: 3×3 block separators
+
+### Progress Tracking
+
+The TUI includes a visual progress bar that shows:
+- **Completion percentage**: How much of the puzzle is filled
+- **Color-coded progress**: 
+  - 🔴 Red (< 25% complete)
+  - 🟡 Yellow (25-50% complete)
+  - 🔵 Cyan (50-75% complete)
+  - 🟢 Green (75-100% complete)
+- **Cell count**: Shows filled cells vs total cells (e.g., "45/81 cells")
 
 ## 🏗️ Architecture
 

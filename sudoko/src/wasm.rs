@@ -78,6 +78,26 @@ impl WasmSudoku {
     }
 
     #[wasm_bindgen]
+    pub fn is_valid_placement(&self, row: usize, col: usize, value: u8) -> bool {
+        self.sudoku.is_valid_placement(row, col, value)
+    }
+
+    #[wasm_bindgen]
+    pub fn get_candidates(&self, row: usize, col: usize) -> Vec<u8> {
+        self.sudoku.get_candidates(row, col).into_iter().collect()
+    }
+
+    #[wasm_bindgen]
+    pub fn is_correct_placement(&self, row: usize, col: usize, value: u8) -> bool {
+        self.sudoku.is_correct_placement(row, col, value)
+    }
+
+    #[wasm_bindgen]
+    pub fn is_valid_and_correct_placement(&self, row: usize, col: usize, value: u8) -> bool {
+        self.sudoku.is_valid_and_correct_placement(row, col, value)
+    }
+
+    #[wasm_bindgen]
     pub fn solve(&mut self) -> Result<(), String> {
         match self.solver.solve(self.sudoku.clone()) {
             Ok(solution) => {

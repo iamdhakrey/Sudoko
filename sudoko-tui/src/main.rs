@@ -125,6 +125,23 @@ impl SudokuApp {
             }
         }
 
+        // Check if the placement is valid before setting
+        if value != 0 && !self.is_placement_valid(row, col, value) {
+            // Still set the value to show the error, but display warning message
+            match self.puzzle.set(row, col, value) {
+                Ok(_) => {
+                    self.message = format!(
+                        "⚠️  Invalid placement: {} violates rules or doesn't match solution",
+                        value
+                    );
+                }
+                Err(e) => {
+                    self.message = format!("Error: {}", e);
+                }
+            }
+            return;
+        }
+
         match self.puzzle.set(row, col, value) {
             Ok(_) => {
                 if value == 0 {
@@ -196,6 +213,33 @@ impl SudokuApp {
             }
         }
     }
+
+    fn calculate_progress(&self) -> (usize, usize, f64) {
+        let total_cells = self.puzzle.size * self.puzzle.size;
+        let mut filled_cells = 0;
+
+        for row in 0..self.puzzle.size {
+            for col in 0..self.puzzle.size {
+                if let Some(cell) = self.puzzle.get(row, col) {
+                    if !cell.is_empty() {
+                        filled_cells += 1;
+                    }
+                }
+            }
+        }
+
+        let progress_percentage = (filled_cells as f64 / total_cells as f64) * 100.0;
+        (filled_cells, total_cells, progress_percentage)
+    }
+
+    fn is_placement_valid(&self, row: usize, col: usize, value: u8) -> bool {
+        if value == 0 {
+            return true; // Empty cells are always valid
+        }
+
+        // Use enhanced validation that checks both basic rules and correctness against solution
+        self.puzzle.is_valid_and_correct_placement(row, col, value)
+    }
 }
 
 fn draw_sudoku_grid(f: &mut Frame, app: &SudokuApp, area: Rect) {
@@ -224,7 +268,17 @@ fn draw_sudoku_grid(f: &mut Frame, app: &SudokuApp, area: Rect) {
                     .fg(Color::Cyan)
                     .add_modifier(Modifier::BOLD)
             } else {
-                Style::default().fg(Color::White)
+                // Check if the cell value is valid
+                let is_valid = match cell.value() {
+                    Some(value) => app.is_placement_valid(row, col, value),
+                    None => true, // Empty cells are always valid
+                };
+
+                if is_valid {
+                    Style::default().fg(Color::White)
+                } else {
+                    Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)
+                }
             };
 
             cells.push(Cell::from(value_str).style(cell_style));
@@ -301,12 +355,50 @@ fn draw_status_info(f: &mut Frame, app: &SudokuApp, area: Rect) {
         Style::default().fg(Color::White)
     };
 
+    // Calculate progress
+    let (filled_cells, total_cells, progress_percentage) = app.calculate_progress();
+
+    // Create progress bar
+    let progress_bar_width = 30;
+    let filled_width = ((progress_percentage / 100.0) * progress_bar_width as f64) as usize;
+    let empty_width = progress_bar_width - filled_width;
+
+    let progress_bar = format!(
+        "[{}{}] {:.1}%",
+        "█".repeat(filled_width),
+        "░".repeat(empty_width),
+        progress_percentage
+    );
+
+    let progress_color = if app.is_solved {
+        Color::Green
+    } else if progress_percentage < 25.0 {
+        Color::Red
+    } else if progress_percentage < 50.0 {
+        Color::Yellow
+    } else if progress_percentage < 75.0 {
+        Color::Cyan
+    } else {
+        Color::Green
+    };
+
     let status_text = vec![
         Line::from(vec![
             Span::styled("Position: ", Style::default().fg(Color::Gray)),
             Span::styled(
                 format!("({}, {})", app.cursor.0 + 1, app.cursor.1 + 1),
                 Style::default().fg(Color::Yellow),
+            ),
+        ]),
+        Line::from(vec![
+            Span::styled("Progress: ", Style::default().fg(Color::Gray)),
+            Span::styled(progress_bar, Style::default().fg(progress_color)),
+        ]),
+        Line::from(vec![
+            Span::styled("Filled: ", Style::default().fg(Color::Gray)),
+            Span::styled(
+                format!("{}/{} cells", filled_cells, total_cells),
+                Style::default().fg(Color::White),
             ),
         ]),
         Line::from(vec![
@@ -424,6 +516,19 @@ fn draw_help(f: &mut Frame, area: Rect) {
             Span::styled("White numbers", Style::default().fg(Color::White)),
             Span::raw(": Numbers you filled in"),
         ]),
+        Line::from(vec![
+            Span::raw("• "),
+            Span::styled(
+                "Red numbers",
+                Style::default().fg(Color::Red).add_modifier(Modifier::BOLD),
+            ),
+            Span::raw(": Invalid numbers (violate rules or don't match solution)"),
+        ]),
+        Line::from(""),
+        Line::from("PROGRESS TRACKING:"),
+        Line::from("• Visual progress bar shows completion percentage"),
+        Line::from("• Color-coded: Red < 25%, Yellow < 50%, Cyan < 75%, Green ≥ 75%"),
+        Line::from("• Displays filled cells count and total cells"),
         Line::from(""),
         Line::from("Press ? again, Esc, or Enter to close this help."),
     ];

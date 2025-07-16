@@ -1,6 +1,6 @@
 [package]
 name = "sudoko-tui"
-version = "0.4.0"
+version = "0.5.0"
 edition = "2021"
 authors = ["Hrithik Dhakrey <dhakreyhrithik@gmail.com>"]
 description = "Terminal User Interface for the sudoko library - modern TUI using ratatui"

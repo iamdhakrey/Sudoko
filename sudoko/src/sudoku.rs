@@ -226,6 +226,104 @@ impl Sudoku {
         candidates
     }
 
+    /// Check if placing a value at the given position would be valid
+    pub fn is_valid_placement(&self, row: usize, col: usize, value: u8) -> bool {
+        if row >= self.size || col >= self.size {
+            return false;
+        }
+
+        if value == 0 || value > self.size as u8 {
+            return false;
+        }
+
+        // Check if value already exists in the same row
+        for c in 0..self.size {
+            if c != col {
+                if let Some(cell) = self.get(row, c) {
+                    if cell.value() == Some(value) {
+                        return false;
+                    }
+                }
+            }
+        }
+
+        // Check if value already exists in the same column
+        for r in 0..self.size {
+            if r != row {
+                if let Some(cell) = self.get(r, col) {
+                    if cell.value() == Some(value) {
+                        return false;
+                    }
+                }
+            }
+        }
+
+        // Check if value already exists in the same box
+        let box_row = row / self.box_size;
+        let box_col = col / self.box_size;
+        for r in box_row * self.box_size..(box_row + 1) * self.box_size {
+            for c in box_col * self.box_size..(box_col + 1) * self.box_size {
+                if r != row || c != col {
+                    if let Some(cell) = self.get(r, c) {
+                        if cell.value() == Some(value) {
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+
+        true
+    }
+
+    /// Check if placing a value at the given position matches the correct solution
+    pub fn is_correct_placement(&self, row: usize, col: usize, value: u8) -> bool {
+        if row >= self.size || col >= self.size {
+            return false;
+        }
+
+        if value == 0 {
+            return true; // Empty cells are always "correct" for display purposes
+        }
+
+        // Create a copy of the original puzzle (without the current invalid state)
+        let mut original_puzzle = self.clone();
+
+        // Clear the specific cell we're checking to get the original state
+        original_puzzle.grid[row][col] = crate::Cell::Empty;
+
+        // Try to solve the original puzzle
+        use crate::SudokuSolver;
+        let mut solver = SudokuSolver::new();
+
+        match solver.solve(original_puzzle) {
+            Ok(solution) => {
+                // Check if the value matches the solution
+                if let Some(cell) = solution.get(row, col) {
+                    if let Some(correct_value) = cell.value() {
+                        return value == correct_value;
+                    }
+                }
+                false
+            }
+            Err(_) => {
+                // If puzzle can't be solved, the value is definitely not correct
+                false
+            }
+        }
+    }
+
+    /// Enhanced validation that checks both basic rules and correctness against solution
+    pub fn is_valid_and_correct_placement(&self, row: usize, col: usize, value: u8) -> bool {
+        // First check basic Sudoku rules
+        if !self.is_valid_placement(row, col, value) {
+            return false;
+        }
+
+        // Then check if it matches the correct solution
+        self.is_correct_placement(row, col, value)
+    }
+
     pub fn find_empty_cell(&self) -> Option<(usize, usize)> {
         for row in 0..self.size {
             for col in 0..self.size {
